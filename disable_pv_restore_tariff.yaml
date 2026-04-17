@@ -1,0 +1,141 @@
+blueprint:
+  name: HBC - Disable PV / Restore PV based on Tariff
+  description: >
+    Controls PV limit and battery strategy based on electricity tariff.
+
+    When tariff goes below the negative threshold:
+    - sets PV limit to the configured "negative tariff PV limit"
+    - sets battery strategy to the configured "negative tariff strategy"
+
+    When tariff goes above the positive threshold:
+    - restores PV limit to the configured "positive tariff PV limit"
+    - sets battery strategy to the configured "positive tariff strategy"
+
+  domain: automation
+
+  input:
+    tariff_sensor:
+      name: Tariff sensor
+      description: Sensor with the current electricity tariff
+      selector:
+        entity:
+          domain: sensor
+
+    negative_threshold:
+      name: Negative threshold
+      description: Trigger negative mode when tariff goes below this value
+      default: 0
+      selector:
+        number:
+          min: -10
+          max: 10
+          step: 0.001
+          mode: box
+
+    positive_threshold:
+      name: Positive threshold
+      description: Restore normal mode when tariff goes above this value
+      default: 0
+      selector:
+        number:
+          min: -10
+          max: 10
+          step: 0.001
+          mode: box
+
+    pv_limit_entity:
+      name: PV limit number entity
+      description: Number entity used to limit PV power
+      selector:
+        entity:
+          domain: number
+
+    pv_limit_negative:
+      name: PV limit during negative tariff
+      description: Usually 0 to disable PV export/production limit
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 100000
+          step: 1
+          mode: box
+
+    pv_limit_positive:
+      name: PV limit during positive tariff
+      description: Value to restore when tariff becomes positive again
+      default: 5000
+      selector:
+        number:
+          min: 0
+          max: 100000
+          step: 1
+          mode: box
+
+    battery_strategy_entity:
+      name: Battery strategy input_select
+      description: Input select that controls the house battery strategy
+      selector:
+        entity:
+          domain: input_select
+
+    negative_strategy:
+      name: Strategy during negative tariff
+      default: Charge
+      selector:
+        text:
+
+    positive_strategy:
+      name: Strategy during positive tariff
+      default: Normal
+      selector:
+        text:
+
+trigger:
+  - platform: numeric_state
+    entity_id: !input tariff_sensor
+    below: !input negative_threshold
+    id: negative_tariff
+
+  - platform: numeric_state
+    entity_id: !input tariff_sensor
+    above: !input positive_threshold
+    id: positive_tariff
+
+condition: []
+
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: negative_tariff
+        sequence:
+          - service: number.set_value
+            target:
+              entity_id: !input pv_limit_entity
+            data:
+              value: !input pv_limit_negative
+
+          - service: input_select.select_option
+            target:
+              entity_id: !input battery_strategy_entity
+            data:
+              option: !input negative_strategy
+
+      - conditions:
+          - condition: trigger
+            id: positive_tariff
+        sequence:
+          - service: number.set_value
+            target:
+              entity_id: !input pv_limit_entity
+            data:
+              value: !input pv_limit_positive
+
+          - service: input_select.select_option
+            target:
+              entity_id: !input battery_strategy_entity
+            data:
+              option: !input positive_strategy
+
+mode: single
