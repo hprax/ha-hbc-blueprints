@@ -64,12 +64,12 @@ blueprint:
     pv_limit_positive:
       name: PV limit during positive tariff
       description: Value to restore when tariff becomes positive again
-      default: 5000
+      default: 0.10
       selector:
         number:
           min: 0
           max: 100000
-          step: 1
+          step: 0.1
           mode: box
 
     battery_strategy_entity:
