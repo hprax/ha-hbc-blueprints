@@ -35,7 +35,7 @@ blueprint:
     positive_threshold:
       name: Positive threshold
       description: Restore normal mode when tariff goes above this value
-      default: 0
+      default: 0.1
       selector:
         number:
           min: -10
