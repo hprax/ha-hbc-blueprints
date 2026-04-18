@@ -103,7 +103,7 @@ Use hysteresis to avoid rapid switching:
 | Mode | PV Limit | Battery Strategy |
 |------|--------|----------------|
 | Negative tariff | `0` (disable PV) | `Charge` |
-| Positive tariff | e.g. `5000` | `Normal` |
+| Positive tariff | e.g. `0.05` | `Normal` |
 
 ---
 

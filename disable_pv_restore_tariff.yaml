@@ -75,6 +75,7 @@ blueprint:
     battery_strategy_entity:
       name: Battery strategy input_select
       description: Input select that controls the house battery strategy
+      default: input_select.house_battery_strategy
       selector:
         entity:
           domain: input_select
